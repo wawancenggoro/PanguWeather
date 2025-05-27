@@ -6,8 +6,58 @@ import numpy as np
 import pandas as pd
 import torch
 import xarray as xr
-from torch.utils.data import DataLoader, Dataset, Subset
+from torch.utils.data import DataLoader, Dataset, Subset, TensorDataset
 from torch.utils.data.distributed import DistributedSampler
+
+def pad_data(t1, t2, patch_size):
+    """
+    Perform padding for outermost patching step.
+
+    t1: Tensor
+        pressure-level tensors
+    t2: Tensor
+        surface-level tensors
+    """
+    # perform padding for patch embedding step
+    input_shape = t1.shape  # shape is (5 variables x 13 pressure levels x 721 latitude x 1440 longitude)
+
+    x1_pad    = (patch_size[0] - (input_shape[1] % patch_size[0])) % patch_size[0] // 2
+    x2_pad    = (patch_size[0] - (input_shape[1] % patch_size[0])) % patch_size[0] - x1_pad
+    y1_pad    = (patch_size[1] - (input_shape[2] % patch_size[1])) % patch_size[1] // 2
+    y2_pad    = (patch_size[1] - (input_shape[2] % patch_size[1])) % patch_size[1] - y1_pad
+    z1_pad    = (patch_size[2] - (input_shape[3] % patch_size[2])) % patch_size[2] // 2
+    z2_pad    = (patch_size[2] - (input_shape[3] % patch_size[2])) % patch_size[2] - z1_pad
+
+    # pad pressure fields input and output
+    t1 = torch.nn.functional.pad(t1, pad=(z1_pad, z2_pad, y1_pad, y2_pad, x1_pad, x2_pad), mode='constant', value=0)
+
+    # pad 
+    t2  = torch.nn.functional.pad(t2, pad=(z1_pad, z2_pad, y1_pad, y2_pad), mode='constant', value=0)
+
+    return t1, t2
+  
+def get_data_loader_synthetic(params):
+    #TODO: save generated random numbers to files, read from those files
+    input_upper = torch.randn((params['batch_size'], 5, 13, 721, 1440)).to(torch.float32)
+    input_surface = torch.randn((params['batch_size'], 4, 721, 1440)).to(torch.float32)
+    input_upper, input_surface = pad_data(input_upper, input_surface, params['patch_size'])
+
+    #TODO: Why is the model output padded on lat (721->724) and vert (13->14)? Need to find out
+    target_upper = torch.randn((params['batch_size'], 5, 14, 724, 1440)).to(torch.float32)
+    target_surface = torch.randn((params['batch_size'], 4, 724, 1440)).to(torch.float32)
+
+    dataset = TensorDataset(input_upper, input_surface, target_upper, target_surface)
+
+    sampler = DistributedSampler(dataset, shuffle=True)
+    # dataloader = DataLoader(dataset=dataset, batch_size=params['batch_size'], shuffle=True)
+    dataloader = DataLoader(dataset,
+                            batch_size=int(params['batch_size']),
+                            shuffle=(sampler is None),
+                            sampler=sampler,
+                            drop_last=False,
+                            pin_memory=torch.cuda.is_available())
+
+    return dataloader
 
 def get_data_loader(params, file_path, distributed, mode, patch_size, subset_size=None, forecast_length=1, two_dimensional=False):
     """

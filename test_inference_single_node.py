@@ -10,7 +10,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     input_surface: Tensor of shape 
       (n_batch, 4, 721, 1440) based on the number in the paper
 """
-num_samples = 4
+num_samples = 1
 input_upper = torch.randn((num_samples, 5, 13, 721, 1440)).to(torch.float32).to(device)
 input_surface = torch.randn((num_samples, 4, 721, 1440)).to(torch.float32).to(device)
 
