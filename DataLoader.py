@@ -3,6 +3,62 @@ import os
 import numpy as np
 import torch
 
+def load_constant_mask_synthetic(
+    patch_size,
+    folder_path="/home/hk-project-epais/ke4365/pangu-weather/constant_masks/",
+):
+    """
+    Load the constant masks applied in the patch embedding layer.
+
+    patch_size: Tuple(int, int, int)
+        Number of pixels in (vert, lat, lon) dimensions per patch
+    folder_path: String
+        Path to directory containing constant masks
+
+    Returns
+    -------
+    land_mask: Tensor
+        of shape (n_lat, n_lon) after padding
+    soil_type: Tensor
+        of shape (n_lat, n_lon) after padding
+    topography: Tensor
+        of shape (n_lat, n_lon) after padding
+    """
+    
+    land_mask = torch.randn((724, 1443)).to(torch.float32)
+    soil_type = torch.randn((724, 1443)).to(torch.float32)
+    topography = torch.randn((724, 1443)).to(torch.float32)
+
+    return land_mask, soil_type, topography
+
+
+def load_constant_mask_2d_synthetic(
+    patch_size,
+    folder_path="/home/hk-project-epais/ke4365/pangu-weather/constant_masks/",
+):
+    """
+    Load the constant masks applied in the patch embedding layer.
+
+    patch_size: Tuple(int, int, int)
+        Number of pixels in (vert, lat, lon) dimensions per patch
+    folder_path: String
+        Path to directory containing constant masks
+
+    Returns
+    -------
+    land_mask: Tensor
+        of shape (n_lat, n_lon) after padding
+    soil_type: Tensor
+        of shape (n_lat, n_lon) after padding
+    topography: Tensor
+        of shape (n_lat, n_lon) after padding
+    """
+    
+    land_mask = torch.randn((724, 1443)).to(torch.float32)
+    soil_type = torch.randn((724, 1443)).to(torch.float32)
+    topography = torch.randn((724, 1443)).to(torch.float32)
+
+    return land_mask, soil_type, topography
 
 def load_constant_mask(
     patch_size,

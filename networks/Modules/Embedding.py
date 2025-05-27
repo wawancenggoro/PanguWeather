@@ -3,7 +3,7 @@ import torch.nn as nn
 from torch import permute, reshape
 from torch.nn import Conv2d, Conv3d, ConvTranspose2d, ConvTranspose3d
 
-from DataLoader import load_constant_mask, load_constant_mask_2d
+from DataLoader import load_constant_mask_synthetic, load_constant_mask_2d_synthetic, load_constant_mask, load_constant_mask_2d
 
 
 class PatchEmbedding(nn.Module):
@@ -33,7 +33,8 @@ class PatchEmbedding(nn.Module):
     self.conv_surface = Conv2d(in_channels=in_surface_channels, out_channels=dim, kernel_size=patch_size[1:], stride=patch_size[1:])
 
     # Load constant masks from the disc
-    self.land_mask, self.soil_type, self.topography = load_constant_mask(patch_size)
+    # self.land_mask, self.soil_type, self.topography = load_constant_mask(patch_size)
+    self.land_mask, self.soil_type, self.topography = load_constant_mask_synthetic(patch_size)
     self.land_mask = self.land_mask.to(device)
     self.soil_type = self.soil_type.to(device)
     self.topography = self.topography.to(device)
@@ -116,7 +117,8 @@ class PatchEmbedding2D(nn.Module):
     self.conv_surface = Conv2d(in_channels=in_channels, out_channels=dim, kernel_size=patch_size, stride=patch_size)
 
     # Load constant masks from the disc
-    self.land_mask, self.soil_type, self.topography = load_constant_mask_2d(patch_size)
+    # self.land_mask, self.soil_type, self.topography = load_constant_mask_2d(patch_size)
+    self.land_mask, self.soil_type, self.topography = load_constant_mask_2d_synthetic(patch_size)
     self.land_mask = self.land_mask.to(device)
     self.soil_type = self.soil_type.to(device)
     self.topography = self.topography.to(device)
