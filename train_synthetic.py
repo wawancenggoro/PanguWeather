@@ -69,8 +69,8 @@ def training_loop(params, device, slurm_localid):
     if params['model'] == '2D' or params['model'] == '2Dim192' or params['model'] == '2DPosEmb' or params['model'] == '2DPosEmbLite':
         two_dimensional = True
         params['patch_size'] = params['patch_size'][-2:] # Patch size should 2 values
-    train_data_loader = get_data_loader_synthetic(params)
-    valid_data_loader = get_data_loader_synthetic(params)
+    train_data_loader = get_data_loader_synthetic(params, params['train_data_path'])
+    valid_data_loader = get_data_loader_synthetic(params, params['valid_data_path'])
 
     # Initialize model based on key
     if params['model'] == 'pangu':
@@ -153,7 +153,9 @@ def training_loop(params, device, slurm_localid):
         epoch_average_loss = 0
         loss = 0
         for i, data in enumerate(train_data_loader):        # Load weather data at time t as the input; load weather data at time t+1/3/6/24 as the output
-            input, input_surface, target, target_surface = data[0], data[1], data[2][0], data[3][0]
+            # input, input_surface, target, target_surface = data[0], data[1], data[2][0], data[3][0]
+            input, input_surface, target, target_surface = data[0], data[1], data[2], data[3]
+            print(f'input_upper batch shape: {input.shape}')
             input = input.to(torch.float32).to(device)
             input_surface = input_surface.to(torch.float32).to(device)
             target = target.to(torch.float32).to(device)
@@ -252,8 +254,8 @@ def training_loop(params, device, slurm_localid):
 
 if __name__ == '__main__':
     params = {}
-    # params['train_data_path'] =  'era_subset.zarr' # CHANGE TO YOUR DATA DIRECTORY
-    # params['valid_data_path'] =  'era_subset.zarr' # CHANGE TO YOUR DATA DIRECTORY
+    params['train_data_path'] =  '/scratch/bmkg1/git/PanguWeather/synthetic_data/train/' # CHANGE TO YOUR DATA DIRECTORY
+    params['valid_data_path'] =  '/scratch/bmkg1/git/PanguWeather/synthetic_data/valid/' # CHANGE TO YOUR DATA DIRECTORY
     # params['pressure_static_data_path'] = 'constant_masks/pressure_zarr.npy' 
     # params['surface_static_data_path'] =  'constant_masks/surface_zarr.npy'  
     params['dt'] = 24
@@ -352,7 +354,7 @@ if __name__ == '__main__':
         params['lon_crop']   = (0, 0) # Do not change if input image size of (721, 1440)
     else:
         params['patch_size'] = (2, 4, 4)
-        params['batch_size'] = 1
+        params['batch_size'] = 4
         params['lat_crop']   = (1, 2) # Do not change if input image size of (721, 1440)
         params['lon_crop']   = (0, 0) # Do not change if input image size of (721, 1440)
 
@@ -363,7 +365,7 @@ if __name__ == '__main__':
     #     params['delta_T_divisor'] = 1 # Required for WeatherBench2 download with hourly time resolution
     # else:
     #     params['delta_T_divisor'] = 6 # Baseline assumption is 6-hourly subsampled data. 
-
+    print(params)
     training_loop(params, device, slurm_localid)
                         
     dist.destroy_process_group()

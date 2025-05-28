@@ -9,6 +9,8 @@ import xarray as xr
 from torch.utils.data import DataLoader, Dataset, Subset, TensorDataset
 from torch.utils.data.distributed import DistributedSampler
 
+import os
+
 def pad_data(t1, t2, patch_size):
     """
     Perform padding for outermost patching step.
@@ -36,15 +38,32 @@ def pad_data(t1, t2, patch_size):
 
     return t1, t2
   
-def get_data_loader_synthetic(params):
+def get_data_loader_synthetic(params, data_path):
     #TODO: save generated random numbers to files, read from those files
-    input_upper = torch.randn((params['batch_size'], 5, 13, 721, 1440)).to(torch.float32)
-    input_surface = torch.randn((params['batch_size'], 4, 721, 1440)).to(torch.float32)
+    with open(os.path.join(data_path, 'input_upper.npy'), 'rb') as f:
+        input_upper = np.load(f)
+
+    with open(os.path.join(data_path, 'input_surface.npy'), 'rb') as f:
+        input_surface = np.load(f)
+
+    with open(os.path.join(data_path, 'target_upper.npy'), 'rb') as f:
+        target_upper = np.load(f)
+
+    with open(os.path.join(data_path, 'target_surface.npy'), 'rb') as f:
+        target_surface = np.load(f)
+
+    # input_upper = torch.randn((params['batch_size'], 5, 13, 721, 1440)).to(torch.float32)
+    # input_surface = torch.randn((params['batch_size'], 4, 721, 1440)).to(torch.float32)
+    input_upper = torch.tensor(input_upper).to(torch.float32)
+    input_surface = torch.tensor(input_surface).to(torch.float32)
+    
     input_upper, input_surface = pad_data(input_upper, input_surface, params['patch_size'])
 
     #TODO: Why is the model output padded on lat (721->724) and vert (13->14)? Need to find out
-    target_upper = torch.randn((params['batch_size'], 5, 14, 724, 1440)).to(torch.float32)
-    target_surface = torch.randn((params['batch_size'], 4, 724, 1440)).to(torch.float32)
+    # target_upper = torch.randn((params['batch_size'], 5, 14, 724, 1440)).to(torch.float32)
+    # target_surface = torch.randn((params['batch_size'], 4, 724, 1440)).to(torch.float32)
+    target_upper = torch.tensor(target_upper).to(torch.float32)
+    target_surface = torch.tensor(target_surface).to(torch.float32)
 
     dataset = TensorDataset(input_upper, input_surface, target_upper, target_surface)
 
