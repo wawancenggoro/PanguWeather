@@ -254,8 +254,8 @@ def training_loop(params, device, slurm_localid):
 
 if __name__ == '__main__':
     params = {}
-    params['train_data_path'] =  '/scratch/bmkg1/git/PanguWeather/synthetic_data/train/' # CHANGE TO YOUR DATA DIRECTORY
-    params['valid_data_path'] =  '/scratch/bmkg1/git/PanguWeather/synthetic_data/valid/' # CHANGE TO YOUR DATA DIRECTORY
+    params['train_data_path'] =  '[PATH_TO_MAIN_DIR]/PanguWeather/synthetic_data/train/' # CHANGE TO YOUR DATA DIRECTORY
+    params['valid_data_path'] =  '[PATH_TO_MAIN_DIR]/PanguWeather/synthetic_data/valid/' # CHANGE TO YOUR DATA DIRECTORY
     # params['pressure_static_data_path'] = 'constant_masks/pressure_zarr.npy' 
     # params['surface_static_data_path'] =  'constant_masks/surface_zarr.npy'  
     params['dt'] = 24
